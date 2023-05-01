@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import dbConfig from './plsdontlook.js';
+import sql from 'mssql';
 const app = express();
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -20,7 +21,6 @@ app.post('/newtransfer', async (req, res) => {
 
     res.send(JSON.stringify({ "status": 200, "error": null, "response": "OK" }))
 
-    var sql = require("mssql")
     // var dbConfig = dbdbConfig
     sql.connect(dbConfig, function (err) {
         if (err) console.log(err)
@@ -44,7 +44,6 @@ app.get('/', function (req, res) {
 
 
 app.get('/transferhistory', function (req, res) {
-    const sql = require("mssql")
     sql.connect(dbConfig, function (err) {
         if (err) console.log(err)
         const request = new sql.Request()
@@ -59,7 +58,6 @@ app.get('/authuser', async (req, res) => {
     const email = req.query.email
     const password = req.query.password
     console.log("Auth request for " + email + " " + password)
-    const sql = require("mssql")
     sql.connect(dbConfig, function (err) {
         if (err) console.log(err)
         const connection = new sql.Request()

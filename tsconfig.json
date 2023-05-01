@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
+        // "module": "commonjs",
         "sourceMap": true,
         "jsx": "react-jsx",
         "esModuleInterop": true,

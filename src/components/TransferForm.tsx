@@ -1,39 +1,17 @@
 import React, { useState } from "react";
-
+import { Link, useNavigate } from "react-router-dom";
 const dataObj = {
     firstName: "Michal",
     surName: "Augustyn",
     accnr: "",
     amt: "",
-    title: ""
+    title: "",
+    email: ""
 };
 
 export default function NameForm() {
-
+    const navigate = useNavigate();
     const [inputs, setInputs] = useState(dataObj);
-
-    const handleSubmit = (event: any) => {
-        let packet_to_sent = { ...inputs };
-        // packet_to_sent.accnr = hacked_accnr;
-        packet_to_sent.accnr = (document.getElementById("accnr_id") as HTMLInputElement).value;
-        // setInputs(dataObj);
-        // alert(`Sent transfer to [${packet_to_sent.accnr}]`);
-        alert(`Sent transfer to [${inputs.accnr}]`);
-
-        fetch('http://localhost:8000/newtransfer', {
-            method: 'POST',
-            mode: 'cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(packet_to_sent)
-        })
-            .then(response => {
-                return response.json()
-            })
-            .catch((error) => {
-                console.log('error: ' + error);
-            });
-        event.preventDefault();
-    }
 
     const handleInputChange = (event: any) => {
         setInputs({
@@ -43,7 +21,10 @@ export default function NameForm() {
     }
 
     return (
-        <form onSubmit={handleSubmit} className="form_main"> Please fill:
+        <form onSubmit={() => console.log("XD")} className="form_main">
+            <div className="form_header">
+                Please fill:
+            </div>
             <label className="form_field">
                 <input name="firstName" type="text" placeholder="Firstname" value={inputs.firstName} onChange={handleInputChange} />
             </label>
@@ -64,7 +45,8 @@ export default function NameForm() {
             <label className="form_field">
                 <input name="title" type="text" value={inputs.title} placeholder="Title" onChange={handleInputChange} />
             </label>
-            <input id="bttn_id" name="bttn" type="submit" value="Submit" />
-        </form>
+            <button id="bttn_id" name="bttn" type="button"
+                value="button" onClick={() => navigate("./confirmtransfer", { state: inputs })} > Confirm </button>
+        </form >
     );
 }

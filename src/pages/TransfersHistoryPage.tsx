@@ -24,6 +24,7 @@ export function TransfersHist() {
             })
             const data = await response.json();
             if (response.ok) {
+
                 setTransfers(data.recordset)
             }
             else { //  Error handling do poprawy

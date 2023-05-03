@@ -1,43 +1,39 @@
 import React, { useState } from "react";
+import { AddUser, SignUpInt, SignUpResponse, AuthUser } from "../util/DBQueries";
 
-interface SignUpInt {
-    firstName: string,
-    surName: string,
-    email: string,
-    password1: string,
-    password2: string,
-};
 
 export default function SignUpForm() {
     const Obj: SignUpInt = { firstName: "", surName: "", email: "", password1: "", password2: "" };
     const [inputs, setInputs] = useState(Obj);
 
-    const correctData = (): boolean => {
-        return inputs.password1 === inputs.password2;
-    }
+
     const handleSubmit = (event: any) => {
         event.preventDefault();
-        let packet_to_sent = { ...inputs };
-
-        if (correctData()) {
-            console.log("OK");
-        }
-        else {
-            console.log("NIE OK");
-        }
-        // fetch('http://localhost:8000/newuser', {
-        //     method: 'POST',
-        //     mode: 'cors',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(packet_to_sent)
-        // })
-        //     .then(response => {
-        //         return response.json()
-        //     })
-        //     .catch((error) => {
-        //         console.log('error: ' + error);
-        //     });
+        console.log("SUBMIT!");
     }
+
+    const verifyPass = (pass1: String, pass2: String): boolean => {
+        if (pass1 !== pass2) {
+            alert("Passwords do no match")
+            return false;
+        }
+        if (pass1.length < 5) {
+            alert("Password is too weak")
+            return false;
+        }
+        return true;
+    }
+
+    const verifyData = (inputs: SignUpInt): boolean => {
+        if (verifyPass(inputs.password1, inputs.password2) == false)
+            return false;
+        if (!inputs.firstName || !inputs.surName || !inputs.email) {
+            alert("Fields cannot be empty");
+            return false;
+        }
+        return true;
+    }
+
 
     const handleInputChange = (event: any) => {
         setInputs({
@@ -46,8 +42,29 @@ export default function SignUpForm() {
         })
     }
 
+    const handleSignUp = async (event: any) => {
+        event.preventDefault();
+        if (verifyData(inputs) == false)
+            return;
+
+        try {
+            const res = await AddUser(inputs);
+            alert(res.message)
+            // if (res.status === 200) {
+            //     //window.location.reload();
+            // }
+        }
+        catch (err) {
+            console.log(err);
+        }
+
+    }
+
     return (
-        <form onSubmit={handleSubmit} className="form_main"> Please fill:
+        <form className="form_main">
+            <div className="form_header">
+                Please fill:
+            </div>
             <label className="form_field">
                 <input name="firstName" type="text" placeholder="Firstname" value={inputs.firstName} onChange={handleInputChange} />
             </label>
@@ -65,7 +82,8 @@ export default function SignUpForm() {
             <label className="form_field">
                 <input name="password2" type="password" value={inputs.password2} placeholder="Repeat password" onChange={handleInputChange} />
             </label>
-            <input id="bttn_id" className="bttn-submit" name="bttn" type="submit" value="Submit" />
+
+            <button id="bttn_id" className="bttn-submit" name="bttn" type="button" onClick={handleSignUp}>Sign up</button>
             <input className="bttn-reset" name="bttn" type="reset" value="Reset" />
 
         </form>

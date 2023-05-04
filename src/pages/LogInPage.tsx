@@ -6,8 +6,7 @@ import LogInForm from "../components/LogInForm"
 export function LogInPage() {
 
     let navigate = useNavigate();
-    const loggedInUser = localStorage.getItem("loggedIn");
-    // console.log("Logged in? " + loggedInUser);
+    const loggedInUser : string = localStorage.getItem("loggedIn");
 
     if (loggedInUser == 'false') {
         return (

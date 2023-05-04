@@ -15,21 +15,16 @@ export default function LogInForm() {
 
     const handleLogin = async (event: any) => {
         event.preventDefault();
-        try {
-            const res = await AuthUser(inputs);
-            if (res.status === 200) {
-                alert("Login Successfull!")
-                localStorage.setItem('loggedIn', 'true');
-                localStorage.setItem('email', inputs.email);
-                window.location.reload();
-            }
-            else {
-                alert("Login Unsuccesfull!");
-                localStorage.setItem('loggedIn', 'false');
-            }
+        const res = await AuthUser(inputs);
+        if (res.status === 200) {
+            alert("Login Successfull!")
+            localStorage.setItem('loggedIn', 'true');
+            localStorage.setItem('email', inputs.email);
+            window.location.reload();
         }
-        catch (err) {
-            console.log(err);
+        else {
+            alert("Login Unsuccesfull!");
+            localStorage.setItem('loggedIn', 'false');
         }
     }
 

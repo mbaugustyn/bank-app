@@ -3,7 +3,8 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import dbConfig from './plsdontlook.js';
 import sql from 'mssql';
-import { send } from 'process';
+import bcrypt from 'bcrypt';
+
 const app = express();
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -45,7 +46,62 @@ const insertTransfer = async (senderID, firstName, surName, accnr, amt, title) =
     }
 }
 
-/* Database : */
+const userExists = async (email) => {
+    try {
+        var poolConnection = await sql.connect(dbConfig);
+        var resultSet = await poolConnection.request().input('email', sql.NVarChar(255), email)
+            .query('SELECT ID FROM [Bank].[Users] WHERE email = @email;');
+        poolConnection.close();
+        if (resultSet.rowsAffected[0] > 0) {
+            return true;
+        }
+    }
+    catch (err) {
+        console.log(err.message);
+    }
+    return false;
+}
+
+const insertUser = async (firstname, lastname, email, hash) => {
+    try {
+        var poolConnection = await sql.connect(dbConfig);
+        var resultSet = await poolConnection.request()
+            .input('firstname', sql.NVarChar(255), firstname)
+            .input('lastname', sql.NVarChar(255), lastname)
+            .input('email', sql.NVarChar(255), email)
+            .input('password', sql.NVarChar(255), hash)
+            .query('INSERT INTO [Bank].[Users] (Name, Surname, email, password) VALUES (@firstname, @lastname, @email, @password);');
+        poolConnection.close();
+
+        if (resultSet.rowsAffected[0] > 0) {
+            return 200;
+        }
+    }
+    catch (Err) {
+        console.log(Err.message);
+    }
+    return 404;
+}
+
+const showUsersTransfers = async (id) => {
+    try {
+        var poolConnection = await sql.connect(dbConfig);
+        var resultSet = await poolConnection.request()
+            .input('id', sql.NVarChar(255), id)
+            .query('SELECT * from [Bank].[Transfers] WHERE ID = @id;');
+        poolConnection.close();
+
+        if (resultSet.rowsAffected[0] > 0) {
+            return resultSet.recordset;
+        }
+    }
+    catch (Err) {
+        console.log(Err.message);
+    }
+    return 404;
+}
+
+/* Post */
 app.post('/newtransfer', async (req, res) => {
     const senderEmail = req.body.email;
     const senderUser = await getUserFromEmail(senderEmail);
@@ -53,7 +109,7 @@ app.post('/newtransfer', async (req, res) => {
 
     if (senderID <= 0) {
         console.log("Nie ma takiego usera");
-        res.status(404);
+        res.sendStatus(404);
         return;
     }
     const firstName = req.body.firstName
@@ -70,15 +126,19 @@ app.get('/', function (req, res) {
 })
 
 
-app.get('/transferhistory', function (req, res) {
-    sql.connect(dbConfig, function (err) {
-        if (err) console.log(err)
-        const request = new sql.Request()
-        request.query('SELECT * from Bank.[Transfers]', function (err, recordset) {
-            if (err) console.log(err)
-            res.send(recordset)
-        })
-    })
+app.get('/transferhistory', async (req, res) => {
+    const email = req.email;
+    const user = await getUserFromEmail(email);
+    const id = user.ID;
+    console.log("ID = " + id);
+    if (id < 0) {
+        res.sendStatus(404);
+        return;
+    }
+    console.log("Email history for " + email + " , id = " + id);
+    const result = await showUsersTransfers(id);
+    console.log("Result = " + result);
+    res.send(result);
 })
 
 app.get('/userpass', async (req, res) => {
@@ -109,6 +169,7 @@ app.get('/authuser', async (req, res) => {
     const email = req.query.email
     const password = req.query.password
     console.log("Auth request for " + email)
+
     sql.connect(dbConfig, function (err) {
         if (err) console.log(err)
         const connection = new sql.Request()
@@ -138,54 +199,28 @@ app.get('/createuser', async (req, res) => {
     const email = req.query.email
     const password = req.query.password
 
-    console.log("Create user for " + email)
-    sql.connect(dbConfig, function (err) {
-        if (err) console.log(err)
-        const connection = new sql.Request()
-        connection.input('email', sql.NVarChar(255), email)
-            .input('password', sql.NVarChar(255), password)
-            .query('SELECT ID FROM [Bank].[Users] WHERE email = @email;',
-                function (err, rows) {
-                    if (err) {
-                        console.error("An error occurred:", err.message)
-                        res.status(500).json({ status: 500, message: "An error occurred: " + err.message, id: -1 })
-                    }
-                    else {
-                        if (rows.rowsAffected[0]) {
-                            res.json({ status: 200, message: "User already exists", id: rows.recordset[0].ID })
-                            return;
-                        } else {
-                            console.log("Doesnt exist yet");
-                            // res.status(404).send({ status: 404, message: "User doesnt exist", id: -1 })
-                        }
-                    }
-                })
-    })
 
-    console.log("Here");
+    console.log("Create user request for " + email);
+    const userAlreadyExists = await userExists(email);
+    if (userAlreadyExists) {
+        console.log("User already exists");
+        res.json({ status: 401, message: "User already exists", id: -1 });
+        return;
+    }
+    const salt = "$2b$10$rYmvsmHoDDZn5e8ZeYEYZe" // bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(password, salt);
+    console.log("Adding user...")
 
-    sql.connect(dbConfig, function (err) {
-        if (err) console.log(err)
-        const connection = new sql.Request()
-            .input('firstname', sql.NVarChar(255), firstname)
-            .input('lastname', sql.NVarChar(255), lastname)
-            .input('email', sql.NVarChar(255), email)
-            .input('password', sql.NVarChar(255), password)
-            .query('INSERT INTO [Bank].[Users] (Name, Surname, email, password) VALUES (@firstname, @lastname, @email, @password);',
-                function (err, rows) {
-                    if (err) {
-                        console.error("An error occurred:", err.message)
-                        res.status(500).json({ status: 500, message: "Database error occurred", id: -1 })
-                    }
-                    else {
-                        if (rows.rowsAffected[0]) {
-                            res.status(200).json({ status: 200, message: "User added successfully.", id: 1 })
-                        } else {
-                            res.status(404).send({ status: 404, message: "User not added.", id: -1 })
-                        }
-                    }
-                });
-    })
+    const addUserStatus = await insertUser(firstname, lastname, email, hash);
+
+    if (addUserStatus == 200) {
+        res.json({ status: 200, message: "User  added succesfully", id: 69 });
+    }
+    else {
+        res.json({ status: 404, message: "User  not added - error", id: -1 });
+    }
+
+
 })
 
 

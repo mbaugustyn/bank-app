@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { getUserTransfers } from "../util/DBQueries"
 
 function CreateList({ list }: { list: any }) {
     return (
@@ -14,22 +14,19 @@ function CreateList({ list }: { list: any }) {
 
 export function TransfersHist() {
     let navigate = useNavigate();
+    const email: string = localStorage.getItem("email");
 
     const [transfers, setTransfers] = useState([]);
-
     useEffect(() => {
         const fetchTransfers = async () => {
-            const response = await fetch('http://localhost:8000/transferhistory', {
-                method: 'GET',
-            })
-            const data = await response.json();
-            if (response.ok) {
+            try {
+                const response = await getUserTransfers(email);
+                console.log(response)
+                setTransfers(response.recordset)
 
-                setTransfers(data.recordset)
             }
-            else { //  Error handling do poprawy
-                console.log("Error fetching");
-                throw response
+            catch (err) { //  Error handling do poprawy
+                console.log("Error fetching " + err.message);
             }
         }
         fetchTransfers();

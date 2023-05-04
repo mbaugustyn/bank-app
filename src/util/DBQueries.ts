@@ -40,8 +40,6 @@ interface TransferInfo {
 };
 
 
-
-
 async function AddUser(inputs: SignUpInt): Promise<SignUpResponse> {
     const authUserUrl = new URL("http://localhost:8000/createuser");
     authUserUrl.searchParams.append("firstname", (inputs.firstName));
@@ -60,12 +58,18 @@ async function AuthUser(inputs: Login): Promise<LoginResponse> {
     const authUserUrl = new URL("http://localhost:8000/authuser");
     authUserUrl.searchParams.append("email", (inputs.email));
     authUserUrl.searchParams.append("password", (inputs.password));
-    const response = await fetch(authUserUrl, {
-        method: 'GET',
-        mode: 'cors',
-    });
-    const Resp: LoginResponse = await response.json();
+    try {
+        const response = await fetch(authUserUrl, {
+            method: 'GET',
+            mode: 'cors',
+        });
+        const Resp: LoginResponse = await response.json();
     return Resp;
+    } catch (err) {
+        console.log("AuthUser Error  " + err.message);
+        return {status: 402, message: "GET error", id : -1};
+    }
+    
 }
 
 async function getUserPassword(inputs: Login): Promise<getPassResponse> {
@@ -79,4 +83,16 @@ async function getUserPassword(inputs: Login): Promise<getPassResponse> {
     return Resp;
 }
 
-export { TransferInfo, AddUser, SignUpInt, SignUpResponse, Login, AuthUser, getUserPassword };
+async function getUserTransfers(email : string) : Promise<any> {
+    const authUserUrl = new URL("http://localhost:8000/transferhistory");
+    authUserUrl.searchParams.append("email", (email));
+    const response = await fetch(authUserUrl, {
+        method: 'GET',
+        mode: 'cors',
+    });
+    console.log("Response = " + response);
+    const Resp: getPassResponse = await response.json();
+    return Resp;
+}
+
+export { getUserTransfers, TransferInfo, AddUser, SignUpInt, SignUpResponse, Login, AuthUser, getUserPassword };

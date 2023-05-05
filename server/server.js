@@ -19,6 +19,9 @@ const getUserFromEmail = async (email) => {
             .query('SELECT * FROM [Bank].[Users] WHERE email = @email;');
         poolConnection.close();
         const nrResults = resultSet.rowsAffected[0]
+        console.log("getUserFromEmail result, " + nrResults);
+        console.log(resultSet.recordset[0])
+
         if (nrResults > 0)
             return (resultSet.recordset[0]);
     }
@@ -87,16 +90,17 @@ const showUsersTransfers = async (id) => {
     try {
         var poolConnection = await sql.connect(dbConfig);
         var resultSet = await poolConnection.request()
-            .input('id', sql.NVarChar(255), id)
-            .query('SELECT * from [Bank].[Transfers] WHERE ID = @id;');
+            .input('id', sql.NVarChar(255), id.toString())
+            .query('SELECT * from [Bank].[Transfers] WHERE SenderID = @id;');
         poolConnection.close();
-
+        console.log("showUsersTransfers returning ");
+        console.log(resultSet.recordset);
         if (resultSet.rowsAffected[0] > 0) {
             return resultSet.recordset;
         }
     }
     catch (Err) {
-        console.log(Err.message);
+        console.log("showUsersTransfers Error" + Err.message);
     }
     return 404;
 }
@@ -104,6 +108,7 @@ const showUsersTransfers = async (id) => {
 /* Post */
 app.post('/newtransfer', async (req, res) => {
     const senderEmail = req.body.email;
+    console.log("New transfer for " + senderEmail)
     const senderUser = await getUserFromEmail(senderEmail);
     const senderID = senderUser.ID;
 
@@ -112,13 +117,14 @@ app.post('/newtransfer', async (req, res) => {
         res.sendStatus(404);
         return;
     }
-    const firstName = req.body.firstName
-    const surName = req.body.surName
-    const accnr = req.body.accnr
-    const amt = req.body.amt
-    const title = req.body.title
-    console.log("Transfer od " + senderEmail + " do " + accnr);
-    await insertTransfer(senderID, firstName, surName, accnr, amt, title);
+    const Name = req.body.Name
+    const Surname = req.body.Surname
+    const AccountNr = req.body.AccountNr
+    const Amount = req.body.Amount
+    const Title = req.body.Title
+    console.log("Transfer od " + senderEmail + " do " + AccountNr);
+    await insertTransfer(senderID, Name, Surname, AccountNr, Amount, Title);
+    res.sendStatus(200);
 })
 
 app.get('/', function (req, res) {
@@ -127,18 +133,18 @@ app.get('/', function (req, res) {
 
 
 app.get('/transferhistory', async (req, res) => {
-    const email = req.email;
+    const email = req.query.email;
     const user = await getUserFromEmail(email);
     const id = user.ID;
-    console.log("ID = " + id);
     if (id < 0) {
         res.sendStatus(404);
         return;
     }
-    console.log("Email history for " + email + " , id = " + id);
+    console.log("transferhistory history for " + email + " , id = " + id);
     const result = await showUsersTransfers(id);
-    console.log("Result = " + result);
-    res.send(result);
+    console.log("transferhistory Result =");
+    console.log(result);
+    res.json(result);
 })
 
 app.get('/userpass', async (req, res) => {
@@ -152,13 +158,13 @@ app.get('/userpass', async (req, res) => {
                 function (err, rows) {
                     if (err) {
                         console.error("An error occurred:", err.message)
-                        res.status(500).json({ status: 500, message: "An error occurred: " + err.message, id: -1 })
+                        res.json({ status: 500, message: "An error occurred: " + err.message, id: -1 })
                     }
                     else {
                         if (rows.rowsAffected[0]) {
-                            res.status(200).json({ status: 200, message: "User found successfully.", password: rows.recordset[0].password })
+                            res.json({ status: 200, message: "User found successfully.", password: rows.recordset[0].password })
                         } else {
-                            res.status(404).send({ status: 404, message: "User not found.", password: -1 })
+                            res.send({ status: 404, message: "User not found.", password: -1 })
                         }
                     }
                 })

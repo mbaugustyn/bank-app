@@ -8,12 +8,12 @@ import { TransferInfo } from "../util/DBQueries"
 export function TransferConfirm() {
     const navigate = useNavigate();
     const location = useLocation();
-    const TransferInfo: TransferInfo = location.state;
+    const Transfer: TransferInfo = location.state;
 
     const handleSubmit = (event: any) => {
         event.preventDefault();
         const email = localStorage.getItem("email");
-        TransferInfo.email = email;
+        Transfer.email = email;
 
         // packet_to_sent.accnr = hacked_accnr;
         // packet_to_sent.accnr = (document.getElementById("accnr_id") as HTMLInputElement).value;
@@ -24,11 +24,18 @@ export function TransferConfirm() {
         fetch('http://localhost:8000/newtransfer', {
             method: 'POST',
             mode: 'cors',
+            credentials: "same-origin",
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(TransferInfo)
+            body: JSON.stringify(Transfer)
         })
             .then(response => {
-                return response.json()
+                if (response.status == 200) {
+                    alert("Transfer sent!")
+                }
+                else {
+                    alert("Transfer failed!")
+                }
+                // return response.json()
             })
             .catch((error) => {
                 console.log('error: ' + error);
@@ -39,11 +46,11 @@ export function TransferConfirm() {
         <div className="main">
             <Header text='Please confirm below info'></Header>
             <ul>
-                <li> First Name = {TransferInfo.firstName}  </li>
-                <li> Last Name = {TransferInfo.surName}  </li>
-                <li> Account number  = {TransferInfo.accnr}  </li>
-                <li> Amount = {TransferInfo.amt}  </li>
-                <li> Title = {TransferInfo.title}  </li>
+                <li> First Name = {Transfer.Name}  </li>
+                <li> Last Name = {Transfer.Surname}  </li>
+                <li> Account number  = {Transfer.AccountNr}  </li>
+                <li> Amount = {Transfer.Amount}  </li>
+                <li> Title = {Transfer.Title}  </li>
             </ul>
             <button id="bttn_id" name="bttn" type="button"
                 value="button" onClick={() => navigate(-1)} > Go back </button>

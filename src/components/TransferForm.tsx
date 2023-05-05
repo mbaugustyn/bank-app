@@ -1,17 +1,22 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-const dataObj = {
-    firstName: "Michal",
-    surName: "Augustyn",
-    accnr: "",
-    amt: "",
-    title: "",
-    email: ""
+import { TransferInfo } from "../util/DBQueries"
+
+const Transfer: TransferInfo = {
+    Name: "",
+    Surname: "",
+    AccountNr: "",
+    Amount: "",
+    Title: "Transfer of money",
+    DateSent: "10-10-2010",
+    ID: -1,
+    SenderID: -1,
+    email: "blank"
 };
 
 export default function NameForm() {
     const navigate = useNavigate();
-    const [inputs, setInputs] = useState(dataObj);
+    const [inputs, setInputs] = useState(Transfer);
 
     const handleInputChange = (event: any) => {
         setInputs({
@@ -26,24 +31,24 @@ export default function NameForm() {
                 Please fill:
             </div>
             <label className="form_field">
-                <input name="firstName" type="text" placeholder="Firstname" value={inputs.firstName} onChange={handleInputChange} />
+                <input name="Name" type="text" placeholder="First name" value={inputs.Name} onChange={handleInputChange} />
             </label>
             <label className="form_field">
-                <input name="surName" type="text" value={inputs.surName} placeholder="Surname" onChange={handleInputChange} />
+                <input name={"Surname"} type="text" value={inputs.Surname} placeholder="Surname" onChange={handleInputChange} />
             </label>
             <label className="form_field">
-                <input id="accnr_id" name="accnr"
+                <input id="accnr_id" name="AccountNr"
                     pattern="[0-9]+"
-                    type="text" value={inputs.accnr}
+                    type="text" value={inputs.AccountNr}
                     placeholder="Account number" onChange={handleInputChange} />
             </label>
             <label className="form_field">
-                <input name="amt" type="number" min="0"
-                    value={inputs.amt} placeholder="Amount"
+                <input name="Amount" type="number" min="0"
+                    value={inputs.Amount} placeholder="Amount"
                     onChange={handleInputChange} />
             </label>
             <label className="form_field">
-                <input name="title" type="text" value={inputs.title} placeholder="Title" onChange={handleInputChange} />
+                <input name="Title" type="text" value={inputs.Title} placeholder="Title" onChange={handleInputChange} />
             </label>
             <button id="bttn_id" name="bttn" type="button"
                 value="button" onClick={() => navigate("./confirmtransfer", { state: inputs })} > Confirm </button>

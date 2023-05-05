@@ -31,11 +31,14 @@ interface SignUpInt {
 };
 
 interface TransferInfo {
-    firstName: string,
-    surName: string,
-    accnr: string,
-    amt: string,
-    title: string,
+    ID: number,
+    SenderID: number,
+    Name: string,
+    Surname: string,
+    AccountNr: number | string,
+    Amount: number | string,
+    Title: string,
+    DateSent: Date | string
     email: string
 };
 
@@ -64,12 +67,12 @@ async function AuthUser(inputs: Login): Promise<LoginResponse> {
             mode: 'cors',
         });
         const Resp: LoginResponse = await response.json();
-    return Resp;
+        return Resp;
     } catch (err) {
         console.log("AuthUser Error  " + err.message);
-        return {status: 402, message: "GET error", id : -1};
+        return { status: 402, message: "GET error", id: -1 };
     }
-    
+
 }
 
 async function getUserPassword(inputs: Login): Promise<getPassResponse> {
@@ -83,15 +86,15 @@ async function getUserPassword(inputs: Login): Promise<getPassResponse> {
     return Resp;
 }
 
-async function getUserTransfers(email : string) : Promise<any> {
+async function getUserTransfers(email: string): Promise<any> {
     const authUserUrl = new URL("http://localhost:8000/transferhistory");
     authUserUrl.searchParams.append("email", (email));
     const response = await fetch(authUserUrl, {
         method: 'GET',
         mode: 'cors',
     });
-    console.log("Response = " + response);
     const Resp: getPassResponse = await response.json();
+    console.log(Resp);
     return Resp;
 }
 

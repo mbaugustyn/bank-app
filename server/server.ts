@@ -1,9 +1,11 @@
-import express from 'express';
+// import * as express from 'express';
+import express from 'express'
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import dbConfig from './plsdontlook.js';
 import sql from 'mssql';
-import bcrypt from 'bcrypt';
+// import bcrypt from 'bcrypt';
+import crypto from 'crypto'
 
 const app = express();
 app.use(cors());
@@ -19,8 +21,6 @@ const getUserFromEmail = async (email) => {
             .query('SELECT * FROM [Bank].[Users] WHERE email = @email;');
         poolConnection.close();
         const nrResults = resultSet.rowsAffected[0]
-        console.log("getUserFromEmail result, " + nrResults);
-        console.log(resultSet.recordset[0])
 
         if (nrResults > 0)
             return (resultSet.recordset[0]);
@@ -43,9 +43,11 @@ const insertTransfer = async (senderID, firstName, surName, accnr, amt, title) =
             .input('title', sql.NVarChar(50), title)
             .query('INSERT INTO Bank.[Transfers] (SenderID, Name, Surname, AccountNr, Amount, Title) VALUES  (@userId, @firstName, @surName, @accnr, @amt, @title)');
         poolConnection.close();
+        return true
     }
     catch (Err) {
         console.log(Err.message);
+        return false;
     }
 }
 
@@ -93,8 +95,6 @@ const showUsersTransfers = async (id) => {
             .input('id', sql.NVarChar(255), id.toString())
             .query('SELECT * from [Bank].[Transfers] WHERE SenderID = @id;');
         poolConnection.close();
-        console.log("showUsersTransfers returning ");
-        console.log(resultSet.recordset);
         if (resultSet.rowsAffected[0] > 0) {
             return resultSet.recordset;
         }
@@ -102,13 +102,13 @@ const showUsersTransfers = async (id) => {
     catch (Err) {
         console.log("showUsersTransfers Error" + Err.message);
     }
-    return 404;
+    return null;
 }
 
 /* Post */
 app.post('/newtransfer', async (req, res) => {
     const senderEmail = req.body.email;
-    console.log("New transfer for " + senderEmail)
+    console.log("New transfer for " + senderEmail + " , to " + req.body.AccountNr)
     const senderUser = await getUserFromEmail(senderEmail);
     const senderID = senderUser.ID;
 
@@ -122,9 +122,11 @@ app.post('/newtransfer', async (req, res) => {
     const AccountNr = req.body.AccountNr
     const Amount = req.body.Amount
     const Title = req.body.Title
-    console.log("Transfer od " + senderEmail + " do " + AccountNr);
-    await insertTransfer(senderID, Name, Surname, AccountNr, Amount, Title);
-    res.sendStatus(200);
+    const success = await insertTransfer(senderID, Name, Surname, AccountNr, Amount, Title);
+    if (success) 
+    res.sendStatus(200);    
+    else 
+    res.sendStatus(404);
 })
 
 app.get('/', function (req, res) {
@@ -140,16 +142,15 @@ app.get('/transferhistory', async (req, res) => {
         res.sendStatus(404);
         return;
     }
-    console.log("transferhistory history for " + email + " , id = " + id);
     const result = await showUsersTransfers(id);
-    console.log("transferhistory Result =");
-    console.log(result);
+    if (result == 404) {
+        res.sendStatus(404);
+    }
     res.json(result);
 })
 
 app.get('/userpass', async (req, res) => {
     const email = req.query.email
-    console.log("Auth request for " + email)
     sql.connect(dbConfig, function (err) {
         if (err) console.log(err)
         const connection = new sql.Request()
@@ -171,40 +172,53 @@ app.get('/userpass', async (req, res) => {
     })
 })
 
+async function verify(password, hash) {
+    return new Promise((resolve, reject) => {
+        const [salt, key] = hash.split(":")
+        crypto.scrypt(password, salt, 64, (err, derivedKey) => {
+            if (err) reject(err);
+            resolve(key == derivedKey.toString('hex'))
+        });
+    })
+}
+
+
 app.get('/authuser', async (req, res) => {
     const email = req.query.email
     const password = req.query.password
+    const user = await getUserFromEmail(email);
+    if (user.ID == -1) {
+        res.send({ status: 404, message: "User not found." })
+    }
+    const user_hash = user.password;
     console.log("Auth request for " + email)
-
-    sql.connect(dbConfig, function (err) {
-        if (err) console.log(err)
-        const connection = new sql.Request()
-        connection.input('mail', sql.NVarChar(255), email)
-            .input('password', sql.NVarChar(255), password)
-            .query('SELECT ID FROM [Bank].[Users] WHERE email = @mail AND password = @password',
-                function (err, rows) {
-                    if (err) {
-                        console.error("An error occurred:", err.message)
-                        res.status(500).json({ status: 500, message: "An error occurred: " + err.message, id: -1 })
-                    }
-                    else {
-                        if (rows.rowsAffected[0]) {
-                            res.json({ status: 200, message: "User found successfully.", id: rows.recordset[0].ID })
-                        } else {
-                            res.status(404).send({ status: 404, message: "User not found.", id: -1 })
-                        }
-                    }
-                })
-    })
+    console.log("Pass = " + user_hash);
+    if (await verify(password, user_hash)) {
+        res.send({ status: 200, message: "Login succesfull" })
+    }
+    else {
+        res.send({ status: 404, message: "Login unsuccesfull" })
+    }
+ 
 })
 
+async function hash(password) {
+    return new Promise((resolve, reject) => {
+        // generate random 16 bytes long salt
+        const salt = crypto.randomBytes(16).toString("hex")
+
+        crypto.scrypt(password, salt, 64, (err, derivedKey) => {
+            if (err) reject(err);
+            resolve(salt + ":" + derivedKey.toString('hex'))
+        });
+    })
+}
 
 app.get('/createuser', async (req, res) => {
     const firstname = req.query.firstname
     const lastname = req.query.lastname
     const email = req.query.email
     const password = req.query.password
-
 
     console.log("Create user request for " + email);
     const userAlreadyExists = await userExists(email);
@@ -213,11 +227,14 @@ app.get('/createuser', async (req, res) => {
         res.json({ status: 401, message: "User already exists", id: -1 });
         return;
     }
-    const salt = "$2b$10$rYmvsmHoDDZn5e8ZeYEYZe" // bcrypt.genSaltSync(10);
-    const hash = bcrypt.hashSync(password, salt);
+
+    const pass = await hash (password);
+    console.log(pass);
+
+    // const hash = bcrypt.hashSync(password, salt);
     console.log("Adding user...")
 
-    const addUserStatus = await insertUser(firstname, lastname, email, hash);
+    const addUserStatus = await insertUser(firstname, lastname, email, pass);
 
     if (addUserStatus == 200) {
         res.json({ status: 200, message: "User  added succesfully", id: 69 });

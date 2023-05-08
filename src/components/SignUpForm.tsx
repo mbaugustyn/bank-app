@@ -8,8 +8,8 @@ export default function SignUpForm() {
 
 
     const handleSubmit = (event: any) => {
-        event.preventDefault();
-        console.log("SUBMIT!");
+        event.preventDefault()
+        console.log("Signup!");
     }
 
     const verifyPass = (pass1: String, pass2: String): boolean => {
@@ -46,18 +46,8 @@ export default function SignUpForm() {
         event.preventDefault();
         if (verifyData(inputs) == false)
             return;
-
-        try {
-            const res = await AddUser(inputs);
-            alert(res.message)
-            // if (res.status === 200) {
-            //     //window.location.reload();
-            // }
-        }
-        catch (err) {
-            console.log(err);
-        }
-
+        const res = await AddUser(inputs);
+        alert(res.message)
     }
 
     return (

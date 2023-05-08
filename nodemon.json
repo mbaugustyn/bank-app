@@ -1,5 +1,8 @@
 {
     "events": {
         "start": "cls"
+    },
+    "execMap": {
+        "ts": "ts-node-esm"
     }
 }

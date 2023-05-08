@@ -1,23 +1,92 @@
-.body {
-    background-color: red;
-    font-size: calc(20px + 2vmin);
+* {
+    font-size: clamp(1.1rem, 2vw , 1.2rem);
+    font-family: "Comic Sans MS, Comic Sans, cursive";
+    color: black;
+}
+
+body {
+    margin: 0 0 0 0;
 }
 
 .main {
-    background-color: #FEF5ED;
+    background-color: #FEFAE0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-items: center;
     height: 100vh;
 }
 
+
+.func-buttons-container {
+    display: flex;
+    flex-direction: column;
+    align-content: space-around;
+    width: 350px;
+    height: 100vh;
+    row-gap: 40px;
+    margin-top: 30px;
+}
+
+/*
+          grow - shrink - basis
+def. is   0    -   1    - auto
+flex 5 is 5    -   1     0%
+*/
+.Header-container {
+    width: 100vw;
+    display: flex;
+    justify-content:  center;
+    
+}
+
 .App-header {
-    text-align: center;
-    /* background-color: #ADC2A9; */
+    margin-left: auto;
     font-size: calc(30px + 2vmin);
-    color: rgb(163, 177, 143);
-    margin: 0;
+    font-family: Marker Felt, fantasy;
+    color: #7C99AC;
+}
+
+
+.logout-container, .login-container {
+    align-self: center;
+    margin-left: auto;
+}
+
+.hidden {
+    visibility: hidden;
+}
+
+.func-button, .util-button  {
+  background-clip: padding-box;
+  background-color: #ACB1D6;
+  border: 1px solid transparent;
+  border-radius: .25rem;
+  box-shadow: rgba(0, 0, 0, 0.02) 0 1px 3px 0;
+  box-sizing: border-box;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: system-ui,-apple-system,system-ui,"Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  justify-content: center;
+  line-height: 1.25;
+  min-height: 3rem;
+  padding: calc(.875rem - 1px) calc(1.5rem - 1px);
+  position: relative;
+  text-decoration: none;
+  transition: all 250ms;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: baseline;
+  width: auto;
+} 
+
+.func-button:hover, .util-button:hover {
+  background-color: #fb8332;
+  box-shadow: rgba(0, 0, 0, 0.1) 0 4px 12px;
+  transform: translateY(-1px);
 }
 
 .form_main {
@@ -25,48 +94,38 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    background-color: #D3E4CD;
     border-radius: 10%;
     width: 30vw;
     row-gap: 25px;
 }
 
-.form_header {
-    margin-top: 10px;
+/* .func-button {
+    background-color: #FFD1D1;
 }
 
-input[type=text]:focus {
+.func-button:hover {
+    background-color: #FFF5E4;
+} */
+
+/* input[type=text]:focus {
     background-color: blanchedalmond;
+}  */
+
+/* .form_header {
+    margin-top: 10px;
 }
 
 /* .sign-buttons-container {
     /* text-align: right; 
 }*/
-
+/* 
 .main {
     display: flex;
     flex-direction: column;
 }
 
-.func-buttons-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-content: space-around;
-    width: 400px;
-    /* width: 90vw; */
-    height: 15vw;
-    row-gap: 20px;
 
-}
 
-.func-button {
-    flex: 5;
-    background-color: #D3E4CD;
-    border-radius: 25px;
-    color: black;
-    font-size: calc(2vmin);
-}
 
 .func-button:hover {
     background-color: #99A799;
@@ -76,3 +135,25 @@ input[type=text]:focus {
 input:invalid {
     background-color: rosybrown;
 }
+
+.TransferHistoryContainer {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.Transfer {
+    display: flex;
+    flex-direction: column;
+    margin: 10px;
+    background-color: #99A799;
+} */
+
+/* 
+.list-header {}
+
+.list-input {}
+
+.info-wrapper {} */
+
+/* background: #ff9999; */

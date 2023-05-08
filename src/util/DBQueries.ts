@@ -94,7 +94,6 @@ async function getUserTransfers(email: string): Promise<any> {
         mode: 'cors',
     });
     const Resp: getPassResponse = await response.json();
-    console.log(Resp);
     return Resp;
 }
 

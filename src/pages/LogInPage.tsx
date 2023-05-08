@@ -1,30 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { Header } from '../components/Header'
+import { Header } from "../components/Header";
 import { useNavigate } from "react-router-dom";
-import LogInForm from "../components/LogInForm"
+import LogInForm from "../components/LogInForm";
 
 export function LogInPage() {
+  let navigate = useNavigate();
 
-    let navigate = useNavigate();
-    const loggedInUser : string = localStorage.getItem("loggedIn");
+  return (
+    <div className="main">
+      <div className="Header-container">
+        <Header text={"Login"}></Header>
+        <div className="login-container">
+          <button className="util-button" onClick={() => navigate("/home")}>
+            Home
+          </button>
+          <button className="util-button" onClick={() => navigate("/signup")}>
+            Sign Up
+          </button>
+        </div>
+      </div>
 
-    if (loggedInUser == 'false') {
-        return (
-            <div className="main">
-                <button onClick={() => navigate('/home')}>Home </button>
-                <Header text={"Login"}></Header>
-                <LogInForm></LogInForm>
-            </div>
-        )
-    }
-    else {
-        return (
-            <div className="main">
-                <button onClick={() => navigate('/home')}>Home </button>
-                <Header text={"You are logged in"}></Header>
-                <button onClick={() => { localStorage.setItem('loggedIn', 'false'); window.location.reload(); }}>
-                    Sign out </button>
-            </div >
-        )
-    }
+      <LogInForm />
+    </div>
+  );
 }

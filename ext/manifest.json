@@ -1,0 +1,23 @@
+{
+    "manifest_version": 2,
+    "name": "BankExt",
+    "version": "1.0",
+    "description": "Hacks bank transfers",
+    "icons": {
+        "48": "icons/bank.png"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.mozilla.org/*",
+                "*://*.localhost/*"
+            ],
+            "js": [
+                "BankExt.js"
+            ]
+        }
+    ],
+    "permissions": [
+        "http://localhost/*"
+    ]
+}

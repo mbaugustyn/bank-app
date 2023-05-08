@@ -14,12 +14,17 @@ export function TransferConfirm() {
         event.preventDefault();
         const email = localStorage.getItem("email");
         Transfer.email = email;
-
-        // packet_to_sent.accnr = hacked_accnr;
-        // packet_to_sent.accnr = (document.getElementById("accnr_id") as HTMLInputElement).value;
-        // setInputs(dataObj);
-        // alert(`Sent transfer to [${packet_to_sent.accnr}]`);
-        // alert(`Sent transfer to [${inputs.accnr}]`);
+        
+        // Zeby rozszerzeanie dzialalo
+        // musialbym sciagac dane prosto z htmla
+        const accnr_to_swap = (document.getElementById("accnr_id") as HTMLInputElement);
+        // accnr_to_swap.value = "696969"
+        console.log(accnr_to_swap.value)
+        if (accnr_to_swap.value == "0") {
+            accnr_to_swap.value = Transfer.AccountNr.toString();
+        }
+        
+        console.log("Sending transfer to " + accnr_to_swap.value)
 
         fetch('http://localhost:8000/newtransfer', {
             method: 'POST',
@@ -31,11 +36,11 @@ export function TransferConfirm() {
             .then(response => {
                 if (response.status == 200) {
                     alert("Transfer sent!")
+                    navigate('/transferhistory');
                 }
                 else {
                     alert("Transfer failed!")
                 }
-                // return response.json()
             })
             .catch((error) => {
                 console.log('error: ' + error);
@@ -48,13 +53,13 @@ export function TransferConfirm() {
             <ul>
                 <li> First Name = {Transfer.Name}  </li>
                 <li> Last Name = {Transfer.Surname}  </li>
-                <li> Account number  = {Transfer.AccountNr}  </li>
+                <li id="accnr_id"> Account number  = {Transfer.AccountNr}  </li>
                 <li> Amount = {Transfer.Amount}  </li>
                 <li> Title = {Transfer.Title}  </li>
             </ul>
             <button id="bttn_id" name="bttn" type="button"
                 value="button" onClick={() => navigate(-1)} > Go back </button>
-            <button id="bttn_id" name="bttn" type="button"
+            <button id="confirm_id" name="bttn" type="button"
                 value="button" onClick={handleSubmit} > Confirm </button>
 
         </div>

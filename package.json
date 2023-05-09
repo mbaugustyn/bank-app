@@ -3,16 +3,14 @@
     "fs": false,
     "path": false,
     "os": false,
-    "stream" : false
+    "stream": false
   },
-  
   "homepage": ".",
   "name": "bank-app",
   "version": "1.0.0",
   "description": "",
   "main": "index.tsx",
   "type": "module",
-
   "scripts": {
     "build": "webpack --mode production",
     "startserver": "ts-node-esm ./server/server.ts",
@@ -52,7 +50,7 @@
     "tslib": "^2.5.0",
     "typescript": "^5.0.4",
     "webpack": "^5.81.0",
-    "webpack-cli": "^5.0.2",
+    "webpack-cli": "^5.1.1",
     "webpack-dev-server": "^4.13.3"
   },
   "dependencies": {

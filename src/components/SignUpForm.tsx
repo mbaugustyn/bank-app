@@ -8,11 +8,11 @@ import {
 
 export default function SignUpForm() {
   const Obj: SignUpInt = {
-    firstName: "BABA",
-    surName: "JAGA",
-    email: "BABA@JAGA.PL",
-    password1: "BABAJAGA",
-    password2: "BABAJAGA",
+    firstName: "",
+    surName: "",
+    email: "",
+    password1: "",
+    password2: "",
   };
   const [inputs, setInputs] = useState(Obj);
 

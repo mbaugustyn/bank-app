@@ -315,7 +315,6 @@ app.get('/message', async (req, res) => {
 
 app.listen(PORT, () => {
     // if (err) console.log(err)
-    const cert = fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/server.crt");
     console.log("Server listening on PORT", PORT)
 })
 
@@ -331,11 +330,11 @@ app.listen(PORT, () => {
 // https
 //   .createServer(
 //     {
-//     //   cert: fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/server.crt"),
-//         // key: fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/server.key"),
-//         // ca: fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/serverca.crt"),
-//     //     requestCert: true, 
-//     // rejectUnauthorized: true
+//         cert: fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/server.crt"),
+//         key: fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/server.key"),
+//         ca: fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/serverca.crt"),
+//         requestCert: true, 
+//     rejectUnauthorized: true
 //     },
 //     app
 //   )

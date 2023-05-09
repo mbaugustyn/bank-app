@@ -48,5 +48,6 @@ module.exports = {
     },
     resolve: {
         extensions: [".js", ".jsx", ".ts", ".tsx", "json"],
+        fallback: { "https": false }
     },
 };

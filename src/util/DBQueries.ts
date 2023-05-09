@@ -1,3 +1,5 @@
+import fs from "fs";
+import https from "https";
 
 interface SignUpResponse {
     status: number,
@@ -43,47 +45,45 @@ interface TransferInfo {
 };
 
 
-async function AddUser(inputs: SignUpInt): Promise<SignUpResponse> {
-    const authUserUrl = new URL("http://localhost:8000/createuser");
-    authUserUrl.searchParams.append("firstname", (inputs.firstName));
-    authUserUrl.searchParams.append("lastname", (inputs.firstName));
-    authUserUrl.searchParams.append("email", (inputs.email));
-    authUserUrl.searchParams.append("password", (inputs.password1));
-    const response = await fetch(authUserUrl, {
-        method: 'GET',
+async function AddUser(inputs: SignUpInt): Promise<any> {
+    console.log("inputs");
+    console.log(inputs);
+    const res = await fetch('http://localhost:8000/createuser', {
+        method: 'POST',
         mode: 'cors',
+        credentials: "same-origin",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(inputs)
     });
-    const Resp: SignUpResponse = await response.json();
-    return Resp;
+    
+    console.log("Res");
+    console.log(res);
+    return res;
+
 }
 
-async function AuthUser(inputs: Login): Promise<LoginResponse> {
-    const authUserUrl = new URL("http://localhost:8000/authuser");
-    authUserUrl.searchParams.append("email", (inputs.email));
-    authUserUrl.searchParams.append("password", (inputs.password));
-    try {
-        const response = await fetch(authUserUrl, {
-            method: 'GET',
-            mode: 'cors',
-        });
-        const Resp: LoginResponse = await response.json();
-        return Resp;
-    } catch (err) {
-        console.log("AuthUser Error  " + err.message);
-        return { status: 402, message: "GET error", id: -1 };
-    }
+async function AuthUser(inputs: Login): Promise<any> {
 
+    const res = await fetch('http://localhost:8000/authuser', {
+            method: 'POST',
+            mode: 'cors',
+            credentials: "same-origin",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(inputs)
+        });
+        const Resp: LoginResponse = await res.json();
+        return Resp;
 }
 
 async function getUserPassword(inputs: Login): Promise<getPassResponse> {
-    const authUserUrl = new URL("http://localhost:8000/userpass");
-    authUserUrl.searchParams.append("email", (inputs.email));
-    const response = await fetch(authUserUrl, {
-        method: 'GET',
-        mode: 'cors',
-    });
-    const Resp: getPassResponse = await response.json();
-    return Resp;
+    return await (
+        await fetch('http://localhost:8000/userpass', {
+            method: 'POST',
+            mode: 'cors',
+            credentials: "same-origin",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(inputs.email)
+        })).json();
 }
 
 async function getUserTransfers(email: string): Promise<any> {

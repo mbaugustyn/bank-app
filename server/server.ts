@@ -6,6 +6,11 @@ import dbConfig from './plsdontlook.js';
 import sql from 'mssql';
 // import bcrypt from 'bcrypt';
 import crypto from 'crypto'
+import nodemailer from 'nodemailer'
+import https from 'https'
+import fs from 'fs'
+import path from 'path';
+
 
 const app = express();
 app.use(cors());
@@ -105,6 +110,38 @@ const showUsersTransfers = async (id) => {
     return null;
 }
 
+const reset_password = async (email : any) => {
+    var transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'testbankmba@gmail.com',
+          pass: 'testbankmba123'
+        }
+      });
+      
+      var mailOptions = {
+        from: 'testbankmba@gmail.com',
+        to: email,
+        subject: 'Reset password',
+        text: 'Your new password is ' + 'polska'
+      };
+      
+      transporter.sendMail(mailOptions, function(error, info){
+        if (error) {
+          console.log(error);
+        } else {
+          console.log('Email sent: ' + info.response);
+        }
+      }); 
+}
+
+app.get ('/resetpassword', async (req,res) => {
+    const email = req.query.email;
+    console.log("Reset pass for " + email);
+    const reset = await reset_password(email);    
+    res.sendStatus(200);
+})
+
 /* Post */
 app.post('/newtransfer', async (req, res) => {
     const senderEmail = req.body.email;
@@ -137,6 +174,7 @@ app.get('/', function (req, res) {
 app.get('/transferhistory', async (req, res) => {
     const email = req.query.email;
     const user = await getUserFromEmail(email);
+    console.log("email " + email);
     const id = user.ID;
     if (id < 0) {
         res.sendStatus(404);
@@ -183,12 +221,14 @@ async function verify(password, hash) {
 }
 
 
-app.get('/authuser', async (req, res) => {
-    const email = req.query.email
-    const password = req.query.password
+app.use('/authuser', async (req, res) => {
+    const email = req.body.email
+    const password = req.body.password
+    console.log("Email = " + email);
     const user = await getUserFromEmail(email);
     if (user.ID == -1) {
         res.send({ status: 404, message: "User not found." })
+        return;
     }
     const user_hash = user.password;
     console.log("Auth request for " + email)
@@ -214,17 +254,18 @@ async function hash(password) {
     })
 }
 
-app.get('/createuser', async (req, res) => {
-    const firstname = req.query.firstname
-    const lastname = req.query.lastname
-    const email = req.query.email
-    const password = req.query.password
-
-    console.log("Create user request for " + email);
+app.use('/createuser', async (req, res) => {
+    const firstname = req.body.firstName
+    const lastname = req.body.surName
+    const email = req.body.email
+    const password = req.body.password1
+    
+    console.log("Create user request for " + firstname );
     const userAlreadyExists = await userExists(email);
     if (userAlreadyExists) {
         console.log("User already exists");
-        res.json({ status: 401, message: "User already exists", id: -1 });
+        res.sendStatus(401);
+        // res.json({ status: 401, message: "User already exists", id: -1 });
         return;
     }
 
@@ -237,15 +278,16 @@ app.get('/createuser', async (req, res) => {
     const addUserStatus = await insertUser(firstname, lastname, email, pass);
 
     if (addUserStatus == 200) {
-        res.json({ status: 200, message: "User  added succesfully", id: 69 });
+        // res.send({ status: 200, message: "User  added succesfully", id: 69 });
+        res.sendStatus(200);
     }
     else {
-        res.json({ status: 404, message: "User  not added - error", id: -1 });
+        // res.send({ status: 404, message: "User  not added - error", id: -1 });
+        res.sendStatus(404);
     }
 
 
 })
-
 
 
 app.get('/message', async (req, res) => {
@@ -254,5 +296,30 @@ app.get('/message', async (req, res) => {
 
 app.listen(PORT, () => {
     // if (err) console.log(err)
+    const cert = fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/server.crt");
     console.log("Server listening on PORT", PORT)
 })
+
+// const clientAuthMiddleware = () => (req, res, next) => {
+//     if (!req.client.authorized) {
+//       return res.status(401).send('Invalid client certificate authentication.');
+//     }
+//     return next();
+//   };
+  
+//   app.use(clientAuthMiddleware());
+
+// https
+//   .createServer(
+//     {
+//     //   cert: fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/server.crt"),
+//         // key: fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/server.key"),
+//         // ca: fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/serverca.crt"),
+//     //     requestCert: true, 
+//     // rejectUnauthorized: true
+//     },
+//     app
+//   )
+//   .listen(PORT,  () => {
+//     console.log("Server listening on PORT", PORT);})
+

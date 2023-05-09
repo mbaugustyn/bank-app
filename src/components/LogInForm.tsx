@@ -15,24 +15,46 @@ export default function LogInForm() {
 
   const handleLogin = async (event: any) => {
     event.preventDefault();
-    const res = await AuthUser(inputs);
-    if (res.status === 200) {
-      alert("Login Successfull!");
-      localStorage.setItem("loggedIn", "true");
-      localStorage.setItem("email", inputs.email);
-      navigate("/home");
-      // window.location.reload();
-    } else {
-      alert("Login Unsuccesfull!");
-      localStorage.setItem("loggedIn", "false");
+    try {
+      const res = await AuthUser(inputs);
+      if (res.status === 200) {
+        alert("Login Successfull!");
+        localStorage.setItem("loggedIn", "true");
+        localStorage.setItem("email", inputs.email);
+        navigate("/home");
+        window.location.href = "/";
+      } else {
+        alert("Login Unsuccesfull!");
+        localStorage.setItem("loggedIn", "false");
+      }
+    } catch (err) {
+      console.log("handle login error " + err.message);
     }
   };
 
+  async function ResetPass(email: string): Promise<number> {
+    console.log("reset pass...");
+    const authUserUrl = new URL("http://localhost:8000/resetpassword");
+    authUserUrl.searchParams.append("email", email);
+    try {
+      const res = await fetch(authUserUrl, {
+        method: "GET",
+        mode: "cors",
+      });
+      if (res.status == 200) return 200;
+      else return 404;
+    } catch (err) {
+      console.log("AuthUser Error  " + err.message);
+      return 404;
+    }
+  }
+
   const handlePasswordReset = async (event: any) => {
     event.preventDefault();
-    const res = await getUserPassword(inputs);
-    if (res.status === 200) {
-      alert("Your Password is " + res.password);
+    console.log("password reset for " + inputs.email);
+    const res = await ResetPass(inputs.email);
+    if (res == 200) {
+      alert("New password has been send to your email");
     } else {
       alert("No user found");
     }
@@ -74,7 +96,7 @@ export default function LogInForm() {
           className="func-button"
           onClick={handlePasswordReset}
         >
-          Remind my password
+          Reset my password
         </button>
         <button
           className="func-button"

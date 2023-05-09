@@ -119,11 +119,30 @@ const reset_password = async (email : any) => {
         }
       });
       
+      const new_pass = "polska"; // generate random
+      const pass = hash(new_pass);
+      const user = await getUserFromEmail(email);
+      const id = user.ID;
+      try {
+        var poolConnection = await sql.connect(dbConfig);
+        var resultSet = await poolConnection.request()
+            .input('new_pass', sql.NVarChar(255), new_pass)
+            .input('id', sql.NVarChar(255), id.toString())
+            .query('UPDATE [Bank].[Users] SET password = @new_pass WHERE ID = @id;');
+        poolConnection.close();
+        if (resultSet.rowsAffected[0] > 0) {
+            return resultSet.recordset;
+        }
+    }
+    catch (Err) {
+        console.log("showUsersTransfers Error" + Err.message);
+    }
+
       var mailOptions = {
         from: 'testbankmba@gmail.com',
         to: email,
         subject: 'Reset password',
-        text: 'Your new password is ' + 'polska'
+        text: 'Your new password is ' + new_pass
       };
       
       transporter.sendMail(mailOptions, function(error, info){

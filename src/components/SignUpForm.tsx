@@ -16,11 +16,6 @@ export default function SignUpForm() {
   };
   const [inputs, setInputs] = useState(Obj);
 
-  const handleSubmit = (event: any) => {
-    event.preventDefault();
-    console.log("Signup!");
-  };
-
   const verifyPass = (pass1: String, pass2: String): boolean => {
     if (pass1 !== pass2) {
       alert("Passwords do no match");

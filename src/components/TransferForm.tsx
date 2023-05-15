@@ -81,10 +81,11 @@ export default function NameForm() {
         name="bttn"
         type="button"
         value="button"
-        onClick={() => {navigate("./confirmtransfer", { state: inputs }); window.location.reload()}}
+        onClick={() => {
+          navigate("./confirmtransfer", { state: inputs });
+        }}
       >
-        {" "}
-        Confirm{" "}
+        Confirm
       </button>
     </form>
   );

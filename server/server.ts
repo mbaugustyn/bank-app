@@ -1,21 +1,22 @@
-// import * as express from 'express';
 import express from 'express'
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import dbConfig from './plsdontlook.js';
 import sql from 'mssql';
-// import bcrypt from 'bcrypt';
 import crypto from 'crypto'
 import nodemailer from 'nodemailer'
 import https from 'https'
 import fs from 'fs'
-import path from 'path';
 
 
-const app = express();
-app.use(cors());
+var app = express();
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json());
+
+
+app.use(cors())
+
+
 const PORT = 8000;
 
 const getUserFromEmail = async (email) => {
@@ -243,20 +244,18 @@ async function verify(password, hash) {
 app.use('/authuser', async (req, res) => {
     const email = req.body.email
     const password = req.body.password
-    console.log("Email = " + email);
+    console.log("Auth for Email = " + email);
     const user = await getUserFromEmail(email);
     if (user.ID == -1) {
-        res.send({ status: 404, message: "User not found." })
+        res.sendStatus(404)
         return;
     }
     const user_hash = user.password;
-    console.log("Auth request for " + email)
-    console.log("Pass = " + user_hash);
     if (await verify(password, user_hash)) {
-        res.send({ status: 200, message: "Login succesfull" })
+        res.sendStatus(200)
     }
     else {
-        res.send({ status: 404, message: "Login unsuccesfull" })
+        res.sendStatus(404)
     }
  
 })
@@ -279,33 +278,18 @@ app.use('/createuser', async (req, res) => {
     const email = req.body.email
     const password = req.body.password1
     
-    console.log("Create user request for " + firstname );
+    console.log("Create user request for " + email );
     const userAlreadyExists = await userExists(email);
     if (userAlreadyExists) {
         console.log("User already exists");
-        res.sendStatus(401);
-        // res.json({ status: 401, message: "User already exists", id: -1 });
+        res.sendStatus(404);
         return;
     }
 
     const pass = await hash (password);
-    console.log(pass);
-
-    // const hash = bcrypt.hashSync(password, salt);
     console.log("Adding user...")
-
     const addUserStatus = await insertUser(firstname, lastname, email, pass);
-
-    if (addUserStatus == 200) {
-        // res.send({ status: 200, message: "User  added succesfully", id: 69 });
-        res.sendStatus(200);
-    }
-    else {
-        // res.send({ status: 404, message: "User  not added - error", id: -1 });
-        res.sendStatus(404);
-    }
-
-
+    res.sendStatus(addUserStatus);
 })
 
 
@@ -313,31 +297,50 @@ app.get('/message', async (req, res) => {
     res.json({ message: "You are broke! XD" })
 })
 
-app.listen(PORT, () => {
-    // if (err) console.log(err)
-    console.log("Server listening on PORT", PORT)
-})
+// app.listen(PORT, () => {
+//     // if (err) console.log(err)
+//     console.log("Server listening on PORT", PORT)
+// })
 
-// const clientAuthMiddleware = () => (req, res, next) => {
-//     if (!req.client.authorized) {
-//       return res.status(401).send('Invalid client certificate authentication.');
-//     }
-//     return next();
-//   };
+const clientAuthMiddleware = () => (req, res, next) => {
+    if (!req.client.authorized) {
+      return res.status(401).send('Invalid client certificate authentication.');
+    }
+    return next();
+  };
   
-//   app.use(clientAuthMiddleware());
+  app.use(clientAuthMiddleware());
 
-// https
-//   .createServer(
-//     {
-//         cert: fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/server.crt"),
-//         key: fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/server.key"),
-//         ca: fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/serverca.crt"),
-//         requestCert: true, 
-//     rejectUnauthorized: true
-//     },
-//     app
-//   )
-//   .listen(PORT,  () => {
-//     console.log("Server listening on PORT", PORT);})
+  app.use(function(req, res, next) {  
+    res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+    res.header(
+      'Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With, X-Api-Key'
+    );
+    res.header('Access-Control-Allow-Credentials', 'true');
+    if ('OPTIONS' === req.method) {
+      res.sendStatus(200);
+    }
+    else {
+      next();
+    }
+  });
+
+
+https
+  .createServer(
+    {
+        key: fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/server.key"),
+        cert: fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/server.crt"),    
+        ca: fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/ca.crt"),
+        requestCert: true, 
+    rejectUnauthorized: true
+    // key: fs.readFileSync('server-key.pem'), 
+    // cert: fs.readFileSync('server-crt.pem'), 
+    // ca: fs.readFileSync('ca-crt.pem'), 
+    },
+    app
+  )
+  .listen(PORT,  () => {
+    console.log("Server listening on PORT", PORT);})
 

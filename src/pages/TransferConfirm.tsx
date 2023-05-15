@@ -15,23 +15,6 @@ export function TransferConfirm() {
     const email = localStorage.getItem("email");
     Transfer.email = email;
 
-      console.log(Transfer.AccountNr)
-
-
-      const accnr_to_swap = document.getElementById(
-        "accnr_id"
-      ) as HTMLInputElement;
-
-      // accnr_to_swap.value = "696969";
-      // console.log(accnr_to_swap.value);
-      // if (accnr_to_swap.value == "0") {
-        // accnr_to_swap.value = Transfer.AccountNr.toString();
-      // }
-
-      // Transfer.AccountNr = "696969";
-      Transfer.AccountNr = accnr_to_swap.value.toString();
-      console.log("Sending transfer to  " + Transfer.AccountNr);
-
     fetch("http://localhost:8000/newtransfer", {
       method: "POST",
       mode: "cors",
@@ -42,7 +25,7 @@ export function TransferConfirm() {
       .then((response) => {
         if (response.status == 200) {
           alert("Transfer sent!");
-          // navigate("/transferhistory");
+          navigate("/transferhistory");
         } else {
           alert("Transfer failed!");
         }

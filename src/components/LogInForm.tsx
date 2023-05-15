@@ -34,6 +34,7 @@ export default function LogInForm() {
 
   async function ResetPass(email: string): Promise<number> {
     console.log("reset pass...");
+    return;
     const authUserUrl = new URL("http://localhost:8000/resetpassword");
     authUserUrl.searchParams.append("email", email);
     try {

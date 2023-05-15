@@ -32,7 +32,6 @@ const TransferItem = ({ item }: { item: TransferInfo }) => {
 function TransferList({ list }: { list: TransferInfo[] }) {
   return (
     <ul className="TransferHistoryContainer">
-      {" "}
       Historia przelewow:
       {list.map((item: TransferInfo) => (
         <TransferItem item={item} key={item.ID}></TransferItem>
@@ -43,17 +42,21 @@ function TransferList({ list }: { list: TransferInfo[] }) {
 
 export function TransfersHist() {
   let navigate = useNavigate();
-  const email: string = localStorage.getItem("email");
 
+  const email: string = localStorage.getItem("email");
+  const [loading, setLoading] = useState(false);
   const [transfers, setTransfers] = useState<TransferInfo[]>();
   useEffect(() => {
     const fetchTransfers = async () => {
+      setLoading(true);
       const response: TransferInfo[] = await getUserTransfers(email);
       setTransfers(response);
+      setLoading(false);
     };
     fetchTransfers();
   }, []);
 
+  console.log("loading = " + loading);
   return (
     <div className="main">
       <div className="Header-container">
@@ -64,11 +67,16 @@ export function TransfersHist() {
           </button>
         </div>
       </div>
-
-      {transfers ? (
-        <TransferList list={transfers}></TransferList>
+      {loading ? (
+        <div> Loading... </div>
       ) : (
-        <div>No transfers</div>
+        <div>
+          {transfers ? (
+            <TransferList list={transfers}></TransferList>
+          ) : (
+            <div>No transfers</div>
+          )}
+        </div>
       )}
     </div>
   );

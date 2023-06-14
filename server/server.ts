@@ -273,6 +273,14 @@ app.post('/authuser', async (req, res) => {
     // res.sendStatus(200)
 })
 
+app.post('/authusergoogle', async (req, res) => {
+    dotenv.config()
+    const email = req.body.email
+    console.log("authusergoogle for Email = " + email);
+    const accessToken = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET);
+    res.json({accessToken : accessToken, status : 200 })
+})
+
 
 async function hash(password) {
     return new Promise((resolve, reject) => {

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Header } from "../components/Header";
 import { useNavigate } from "react-router-dom";
+import { googleLogout, useGoogleLogin } from "@react-oauth/google";
 export function HomePage() {
   const navigate = useNavigate();
   const loggedInUser = localStorage.getItem("loggedIn");
@@ -18,6 +19,7 @@ export function HomePage() {
               onClick={() => {
                 localStorage.setItem("loggedIn", "false");
                 window.location.reload();
+                googleLogout();
               }}
             >
               Log out <br /> {email}

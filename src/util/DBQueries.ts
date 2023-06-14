@@ -65,6 +65,16 @@ async function AuthUser(inputs: Login): Promise<any> {
     })).json();
 }
 
+async function AuthUserGoogle(email : String): Promise<any> {
+    return await (await fetch('http://localhost:8000/authusergoogle', {
+        method: 'POST',
+        mode: 'cors',
+        credentials: "same-origin",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({email})
+    })).json();
+}
+
 async function getUserPassword(inputs: Login): Promise<getPassResponse> {
     return await (
         await fetch('http://localhost:8000/userpass', {
@@ -87,4 +97,4 @@ async function getUserTransfers(email: string): Promise<any> {
     return Resp;
 }
 
-export { getUserTransfers, TransferInfo, AddUser, SignUpInt, SignUpResponse, Login, AuthUser, getUserPassword };
+export { AuthUserGoogle, getUserTransfers, TransferInfo, AddUser, SignUpInt, SignUpResponse, Login, AuthUser, getUserPassword };

@@ -25,7 +25,31 @@ const ProtectedRoute = ({ loggedIn, children }) => {
 
 export default function App() {
   const loggedInUser = localStorage.getItem("loggedIn") == "true";
-  console.log(loggedInUser);
+
+  /* Only 1 tab open at the time */
+  const tabsOpen = localStorage.getItem("tabsOpen");
+  if (tabsOpen == null) {
+    localStorage.setItem("tabsOpen", "1");
+  } else {
+    console.log("Incrementing..");
+    localStorage.setItem("tabsOpen", (parseInt(tabsOpen) + 1).toString());
+  }
+  window.onunload = function (e) {
+    console.log("1. Decrementing...");
+    const newTabCount = parseInt(localStorage.getItem("tabsOpen")!);
+    if (newTabCount !== null) {
+      localStorage.setItem("tabsOpen", (newTabCount - 1).toString());
+    }
+  };
+  window.onbeforeunload = function (e) {
+    console.log("2. Decrementing...");
+    const newTabCount = parseInt(localStorage.getItem("tabsOpen")!);
+    if (newTabCount !== null) {
+      localStorage.setItem("tabsOpen", (newTabCount - 1).toString());
+    }
+  };
+  console.log("tabsOpen", tabsOpen);
+
   return (
     <div className="App">
       <BrowserRouter>

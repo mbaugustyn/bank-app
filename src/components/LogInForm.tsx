@@ -31,7 +31,6 @@ export default function LogInForm() {
         localStorage.setItem("JWT", res.accessToken);
         localStorage.setItem("loggedIn", "true");
         localStorage.setItem("email", inputs.email);
-
         navigate("/home");
         window.location.href = "/";
       } else {

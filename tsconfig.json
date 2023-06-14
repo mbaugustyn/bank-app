@@ -9,6 +9,7 @@
     },
     "include": [
         "src/*/*",
+        "server/server.ts"
     ],
     "exclude": [
         "node_modules",

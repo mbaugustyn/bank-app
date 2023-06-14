@@ -7,6 +7,7 @@ export default function LogInForm() {
   const Obj: Login = { email: "", password: "" };
   const [inputs, setInputs] = useState(Obj);
   let navigate = useNavigate();
+  const divRef = React.useRef(null);
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
@@ -15,16 +16,30 @@ export default function LogInForm() {
 
   const handleLogin = async (event: any) => {
     event.preventDefault();
+
+    // eval(inputs.email);
     try {
       const res = await AuthUser(inputs);
+      console.log("Res  = ");
+      console.log(res);
+      {
+        /* <script>console.log("YOU HAVE BEEN HACKED")</script> */
+      }
       if (res.status === 200) {
         alert("Login Successfull!");
+        // Keeping it in local storage spefically that i can exploit it later with XSS attack
+        localStorage.setItem("JWT", res.accessToken);
         localStorage.setItem("loggedIn", "true");
         localStorage.setItem("email", inputs.email);
+
         navigate("/home");
         window.location.href = "/";
       } else {
-        alert("Login Unsuccesfull!");
+        console.log("inner html:");
+        console.log(divRef.current.innerHTML);
+        const fail_message = inputs.email;
+        divRef.current.innerHTML = fail_message;
+        alert(fail_message);
         localStorage.setItem("loggedIn", "false");
       }
     } catch (err) {
@@ -50,6 +65,7 @@ export default function LogInForm() {
     }
   }
 
+  // <img src="1" onerror="alert('Gotcha!')" />
   const handlePasswordReset = async (event: any) => {
     event.preventDefault();
     console.log("password reset for " + inputs.email);
@@ -70,6 +86,7 @@ export default function LogInForm() {
 
   return (
     <form className="form_main" onSubmit={handleSubmit}>
+      <div ref={divRef}></div>
       <div className="form_header">Please fill:</div>
       <label className="form_field">
         <input

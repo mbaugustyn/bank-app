@@ -1,0 +1,12 @@
+GET http://localhost:8000/message
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6NDAsIk5hbWUiOiJqYW4iLCJTdXJuYW1lIjoidGVzdG93eSIsImVtYWlsIjoiamFuQHRlc3Rvd3kucGwiLCJwYXNzd29yZCI6IjJjZDJhMmNkYmRjNWZjYmI3ZGVjNDgzYmJjZmI5MWY2OjhkYjI1Y2RjNTVmZjY5OGU5NWU4MjAxMjQ4MTUwNjQzZjQzMWE4ZmQ3ZTY4M2E4MDlhODFiODdiMDhiNjQ0M2VjNzRlNTYwODkxN2Y2OTM1YWE5NjEzODJiMjY4NTIxN2NjYjE0M2QxYTZiNTU0ZDliMzYwZGY2Mjg2NGVlOWNkIiwiaWF0IjoxNjg2NjczMzI3fQ.UpVwkoDS2y_CTO6eKJo06QKP1su3zDS4GcEBRKuIw7A
+
+
+###
+POST http://localhost:8000/authuser
+Content-Type: application/json
+
+{
+    "email" : "jan@testowy.pl",
+    "password" : "jantestowy"
+}

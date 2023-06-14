@@ -7,15 +7,13 @@ import crypto from 'crypto'
 import nodemailer from 'nodemailer'
 import https from 'https'
 import fs from 'fs'
-
+import jwt from 'jsonwebtoken'
 
 var app = express();
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json());
-
-
 app.use(cors())
-
+app.use(express.json())
 
 const PORT = 8000;
 
@@ -57,20 +55,28 @@ const insertTransfer = async (senderID, firstName, surName, accnr, amt, title) =
     }
 }
 
+// SQL Injection:
+// W singupie wpisac jako email:
+// jan@testowy.pl'; DELETE FROM Bank.[Users]  WHERE Name = 'BABA
 const userExists = async (email) => {
     try {
         var poolConnection = await sql.connect(dbConfig);
-        var resultSet = await poolConnection.request().input('email', sql.NVarChar(255), email)
-            .query('SELECT ID FROM [Bank].[Users] WHERE email = @email;');
+        // var resultSet = await poolConnection.request().input('email', sql.NVarChar(255), email)
+        //     .query('SELECT ID FROM [Bank].[Users] WHERE email = @email;');
+        const myquery = `SELECT ID FROM [Bank].[Users] WHERE email = '${email}'`;
+        // console.log("query = " + myquery);
+        var resultSet = await poolConnection.request().query(myquery);
+        // console.log("Resultset");
+        // console.log(resultSet);
         poolConnection.close();
-        if (resultSet.rowsAffected[0] > 0) {
-            return true;
+        if (resultSet.rowsAffected[0] == 0) {
+            return false;
         }
     }
     catch (err) {
-        console.log(err.message);
+        console.log("Error in userExists " + err.message);
     }
-    return false;
+    return true;
 }
 
 const insertUser = async (firstname, lastname, email, hash) => {
@@ -240,31 +246,39 @@ async function verify(password, hash) {
     })
 }
 
+import dotenv from 'dotenv'
 
-app.use('/authuser', async (req, res) => {
+app.post('/authuser', async (req, res) => {
+    dotenv.config()
     const email = req.body.email
     const password = req.body.password
     console.log("Auth for Email = " + email);
     const user = await getUserFromEmail(email);
     if (user.ID == -1) {
-        res.sendStatus(404)
+        res.json({status : 404 })
         return;
     }
     const user_hash = user.password;
-    if (await verify(password, user_hash)) {
-        res.sendStatus(200)
+    const login_succes =  await verify(password, user_hash);
+    if (!login_succes)  {
+        res.json({status : 404 })
+        return;
     }
-    else {
-        res.sendStatus(404)
-    }
- 
+    console.log("Login successfull");
+    console.log("User : ");
+    console.log(user);
+    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET);
+    res.json({accessToken : accessToken, status : 200 })
+    
+    // res.sendStatus(200)
 })
+
 
 async function hash(password) {
     return new Promise((resolve, reject) => {
         // generate random 16 bytes long salt
         const salt = crypto.randomBytes(16).toString("hex")
-
+        
         crypto.scrypt(password, salt, 64, (err, derivedKey) => {
             if (err) reject(err);
             resolve(salt + ":" + derivedKey.toString('hex'))
@@ -280,12 +294,14 @@ app.use('/createuser', async (req, res) => {
     
     console.log("Create user request for " + email );
     const userAlreadyExists = await userExists(email);
+    console.log("already exists?")
+    console.log(userAlreadyExists);
     if (userAlreadyExists) {
         console.log("User already exists");
         res.sendStatus(404);
         return;
     }
-
+    
     const pass = await hash (password);
     console.log("Adding user...")
     const addUserStatus = await insertUser(firstname, lastname, email, pass);
@@ -293,54 +309,26 @@ app.use('/createuser', async (req, res) => {
 })
 
 
-app.get('/message', async (req, res) => {
-    res.json({ message: "You are broke! XD" })
+function authenticateToken (req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (token == null) return res.sendStatus (401);
+    jwt.verify (token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403);
+        console.log("Verified");
+        console.log(user)
+        req.body = user; // TODO: Musze dawac do body, nie potrafie extendowac tym Request o pole dodatkowe np "user"
+        next();
+    })
+}
+
+
+
+app.get('/message', authenticateToken,  (req , res) => {
+    res.json({ message: "You are broke! " + req.body.email})
 })
 
-// app.listen(PORT, () => {
-//     // if (err) console.log(err)
-//     console.log("Server listening on PORT", PORT)
-// })
-
-const clientAuthMiddleware = () => (req, res, next) => {
-    if (!req.client.authorized) {
-      return res.status(401).send('Invalid client certificate authentication.');
-    }
-    return next();
-  };
-  
-  app.use(clientAuthMiddleware());
-
-  app.use(function(req, res, next) {  
-    res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-    res.header(
-      'Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With, X-Api-Key'
-    );
-    res.header('Access-Control-Allow-Credentials', 'true');
-    if ('OPTIONS' === req.method) {
-      res.sendStatus(200);
-    }
-    else {
-      next();
-    }
-  });
-
-
-https
-  .createServer(
-    {
-        key: fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/server.key"),
-        cert: fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/server.crt"),    
-        ca: fs.readFileSync("/Users/micha/OneDrive/Dokumenty/UWr/Informatyka/Semestr_6/WdBK/bank-app/certs/ca.crt"),
-        requestCert: true, 
-    rejectUnauthorized: true
-    // key: fs.readFileSync('server-key.pem'), 
-    // cert: fs.readFileSync('server-crt.pem'), 
-    // ca: fs.readFileSync('ca-crt.pem'), 
-    },
-    app
-  )
-  .listen(PORT,  () => {
-    console.log("Server listening on PORT", PORT);})
+app.listen(PORT, () => {
+    console.log("Server listening on PORT", PORT)
+})
 

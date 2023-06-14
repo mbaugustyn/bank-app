@@ -5,24 +5,24 @@ interface SignUpResponse {
     status: number,
     message: string,
     id: number
-};
+}
 
 interface Login {
     email: string,
     password: string,
-};
+}
 
 interface LoginResponse {
     status: number,
     message: string,
     id: number
-};
+}
 
 interface getPassResponse {
     status: number,
     message: string,
     password: string
-};
+}
 
 interface SignUpInt {
     firstName: string,
@@ -30,7 +30,7 @@ interface SignUpInt {
     email: string,
     password1: string,
     password2: string,
-};
+}
 
 interface TransferInfo {
     ID: number,
@@ -42,7 +42,7 @@ interface TransferInfo {
     Title: string,
     DateSent: Date | string
     email: string
-};
+}
 
 
 async function AddUser(inputs: SignUpInt): Promise<any> {
@@ -56,13 +56,13 @@ async function AddUser(inputs: SignUpInt): Promise<any> {
 }
 
 async function AuthUser(inputs: Login): Promise<any> {
-    return await fetch('http://localhost:8000/authuser', {
+    return await (await fetch('http://localhost:8000/authuser', {
         method: 'POST',
         mode: 'cors',
-        credentials: "include",
+        credentials: "same-origin",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(inputs)
-    });
+    })).json();
 }
 
 async function getUserPassword(inputs: Login): Promise<getPassResponse> {

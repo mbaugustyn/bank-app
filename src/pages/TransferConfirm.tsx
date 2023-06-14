@@ -1,9 +1,10 @@
 import TransferForm from "../components/TransferForm";
 import { UNSAFE_LocationContext, useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
-import { useOutletContext } from "react-router-dom";
+// import { useOutletContext } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { TransferInfo } from "../util/DBQueries";
+import React from "react";
 
 export function TransferConfirm() {
   const navigate = useNavigate();

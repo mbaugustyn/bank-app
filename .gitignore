@@ -1,5 +1,6 @@
 # Secrets
 plsdontlook.js
+.env
 certs
 build
 # Logs
